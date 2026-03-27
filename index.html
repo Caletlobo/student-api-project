@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Records</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:       #0a0f1e;
+      --panel:    #111827;
+      --card:     #162040;
+      --border:   #1e3a6e;
+      --accent:   #f59e0b;
+      --accent2:  #3b82f6;
+      --danger:   #ef4444;
+      --success:  #22c55e;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+      --highlight:#fbbf24;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: linear-gradient(135deg, #0d1b3e 0%, #1a2e5e 50%, #0d1b3e 100%);
+      border-bottom: 2px solid var(--accent);
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 4px 30px rgba(245,158,11,0.15);
+    }
+
+    header .icon {
+      font-size: 2rem;
+      filter: drop-shadow(0 0 8px var(--accent));
+    }
+
+    header h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.9rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #fff;
+      text-shadow: 0 0 20px rgba(245,158,11,0.4);
+    }
+
+    header h1 span { color: var(--accent); }
+
+    .header-right {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+    }
+
+    .badge {
+      background: rgba(59,130,246,0.15);
+      border: 1px solid var(--accent2);
+      color: var(--accent2);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.72rem;
+      padding: 4px 10px;
+      border-radius: 4px;
+      letter-spacing: 1px;
+    }
+
+    /* ── LAYOUT ── */
+    .main { display: flex; min-height: calc(100vh - 73px); }
+
+    /* ── SIDEBAR ── */
+    aside {
+      width: 260px;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      padding: 24px 0;
+      flex-shrink: 0;
+    }
+
+    .sidebar-section {
+      padding: 0 20px 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 24px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--muted);
+      border-left: 3px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .nav-item:hover { background: rgba(245,158,11,0.05); color: var(--text); }
+
+    .nav-item.active {
+      background: rgba(245,158,11,0.1);
+      color: var(--accent);
+      border-left-color: var(--accent);
+    }
+
+    .nav-item .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+    .nav-item.active .dot { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+
+    .method-tag {
+      margin-left: auto;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-weight: 500;
+    }
+    .GET    { background: rgba(34,197,94,0.15);  color: #22c55e; }
+    .POST   { background: rgba(59,130,246,0.15); color: #60a5fa; }
+    .PATCH  { background: rgba(245,158,11,0.15); color: #fbbf24; }
+    .DELETE { background: rgba(239,68,68,0.15);  color: #f87171; }
+
+    /* ── CONTENT ── */
+    .content { flex: 1; padding: 28px 32px; overflow-y: auto; }
+
+    /* ── TABS ── */
+    .tab-panels > div { display: none; }
+    .tab-panels > div.active { display: block; }
+
+    /* ── SECTION TITLE ── */
+    .section-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      margin-bottom: 20px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+
+    /* ── TOOLBAR ── */
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    input, select {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 9px 14px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      font-family: 'Nunito', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus { border-color: var(--accent2); }
+    input::placeholder { color: var(--muted); }
+
+    .btn {
+      padding: 9px 18px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+    }
+    .btn-primary:hover { background: #fbbf24; transform: translateY(-1px); }
+
+    .btn-blue {
+      background: var(--accent2);
+      color: #fff;
+    }
+    .btn-blue:hover { background: #2563eb; }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+    }
+    .btn-danger:hover { background: #dc2626; }
+
+    .btn-edit {
+      background: rgba(245,158,11,0.15);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 6px 12px;
+      font-size: 0.8rem;
+    }
+    .btn-edit:hover { background: rgba(245,158,11,0.3); }
+
+    /* ── TABLE ── */
+    .table-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: linear-gradient(135deg, #0d1b3e, #162040);
+      border-bottom: 2px solid var(--accent);
+    }
+
+    th {
+      padding: 13px 18px;
+      text-align: left;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 2px;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    td {
+      padding: 13px 18px;
+      font-size: 0.9rem;
+      border-bottom: 1px solid rgba(30,58,110,0.4);
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tr:hover td { background: rgba(59,130,246,0.05); }
+
+    .id-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      background: rgba(59,130,246,0.1);
+      color: var(--accent2);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.82rem;
+    }
+
+    .year-badge {
+      background: rgba(245,158,11,0.12);
+      color: var(--accent);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .actions { display: flex; gap: 8px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .empty-state .big { font-size: 3rem; margin-bottom: 12px; }
+
+    /* ── FORM CARD ── */
+    .form-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px;
+      max-width: 520px;
+    }
+
+    .form-group { margin-bottom: 18px; }
+
+    label {
+      display: block;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .form-card input, .form-card select { width: 100%; }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: var(--panel);
+      border-left: 4px solid var(--success);
+      color: var(--text);
+      padding: 14px 20px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      transform: translateX(120%);
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      z-index: 999;
+      max-width: 320px;
+    }
+
+    #toast.show { transform: translateX(0); }
+    #toast.error { border-left-color: var(--danger); }
+
+    /* ── STATS ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 26px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--accent);
+      border-radius: 12px;
+      padding: 28px;
+      width: 460px;
+      animation: pop 0.25s ease;
+    }
+
+    @keyframes pop {
+      from { opacity: 0; transform: scale(0.92); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 22px;
+      color: var(--accent);
+      letter-spacing: 1px;
+    }
+
+    .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+
+    /* ── API DOCS ── */
+    .endpoint-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+
+    .ep-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .ep-path {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.9rem;
+      color: #fff;
+    }
+
+    .ep-desc { color: var(--muted); font-size: 0.85rem; margin-left: auto; }
+
+    .ep-body {
+      padding: 14px 18px;
+      border-top: 1px solid var(--border);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.82rem;
+      color: #7dd3fc;
+      background: #080e1e;
+      white-space: pre;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="icon">🎓</span>
+  <h1>STUDENT <span>RECORDS</span></h1>
+  <div class="header-right">
+    <span class="badge">REST API v1.0</span>
+    <span class="badge">PORT 3000</span>
+  </div>
+</header>
+
+<div class="main">
+  <!-- SIDEBAR -->
+  <aside>
+    <div class="sidebar-section">Endpoints</div>
+
+    <div class="nav-item active" onclick="showTab('all')">
+      <div class="dot"></div>
+      All Students
+      <span class="method-tag GET">GET</span>
+    </div>
+    <div class="nav-item" onclick="showTab('single')">
+      <div class="dot"></div>
+      Find by ID
+      <span class="method-tag GET">GET</span>
+    </div>
+    <div class="nav-item" onclick="showTab('add')">
+      <div class="dot"></div>
+      Add Student
+      <span class="method-tag POST">POST</span>
+    </div>
+    <div class="nav-item" onclick="showTab('docs')">
+      <div class="dot"></div>
+      API Docs
+      <span class="method-tag GET">📄</span>
+    </div>
+
+    <br/>
+    <div class="sidebar-section">Quick Stats</div>
+    <div style="padding:0 20px">
+      <div class="stat-card">
+        <div class="stat-num" id="sidebar-count">5</div>
+        <div class="stat-label">Total Students</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <div class="tab-panels">
+
+      <!-- ALL STUDENTS -->
+      <div id="tab-all" class="active">
+        <div class="section-title">📋 All Students</div>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-num" id="st-total">5</div>
+            <div class="stat-label">Students</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="st-branches">4</div>
+            <div class="stat-label">Branches</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="st-year1">—</div>
+            <div class="stat-label">Yr 1 Count</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="st-year4">—</div>
+            <div class="stat-label">Yr 4 Count</div>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <input id="search" type="text" placeholder="🔍  Search by name or branch…" style="width:260px" oninput="renderTable()"/>
+          <select id="filter-year" onchange="renderTable()">
+            <option value="">All Years</option>
+            <option value="1">Year 1</option>
+            <option value="2">Year 2</option>
+            <option value="3">Year 3</option>
+            <option value="4">Year 4</option>
+          </select>
+          <button class="btn btn-primary" onclick="fetchStudents()">↻ Refresh</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Branch</th>
+                <th>Year</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- FIND BY ID -->
+      <div id="tab-single">
+        <div class="section-title">🔍 Find Student by ID</div>
+        <div class="form-card">
+          <div class="form-group">
+            <label>Student ID</label>
+            <input id="find-id" type="number" placeholder="e.g. 1"/>
+          </div>
+          <button class="btn btn-blue" onclick="findById()">Search</button>
+
+          <div id="find-result" style="margin-top:24px;display:none">
+            <div style="background:#080e1e;border:1px solid var(--border);border-radius:8px;padding:18px;font-family:'IBM Plex Mono',monospace;font-size:0.88rem;white-space:pre;color:#7dd3fc" id="find-json"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADD STUDENT -->
+      <div id="tab-add">
+        <div class="section-title">➕ Add New Student</div>
+        <div class="form-card">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input id="add-name" type="text" placeholder="e.g. Rahul Desai"/>
+          </div>
+          <div class="form-group">
+            <label>Branch</label>
+            <select id="add-branch">
+              <option value="">Select branch…</option>
+              <option>Computer Science</option>
+              <option>Electronics</option>
+              <option>Mechanical</option>
+              <option>Civil</option>
+              <option>Information Tech</option>
+              <option>Chemical</option>
+              <option>Electrical</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Year</label>
+            <select id="add-year">
+              <option value="">Select year…</option>
+              <option value="1">Year 1 (FE)</option>
+              <option value="2">Year 2 (SE)</option>
+              <option value="3">Year 3 (TE)</option>
+              <option value="4">Year 4 (BE)</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="addStudent()">Add Student</button>
+        </div>
+      </div>
+
+      <!-- API DOCS -->
+      <div id="tab-docs">
+        <div class="section-title">📄 API Reference</div>
+
+        <div class="endpoint-card">
+          <div class="ep-header">
+            <span class="method-tag GET" style="font-size:0.78rem;padding:4px 10px">GET</span>
+            <span class="ep-path">/students</span>
+            <span class="ep-desc">Returns all students</span>
+          </div>
+          <div class="ep-body">→ { success: true, count: 5, data: [ ... ] }</div>
+        </div>
+
+        <div class="endpoint-card">
+          <div class="ep-header">
+            <span class="method-tag GET" style="font-size:0.78rem;padding:4px 10px">GET</span>
+            <span class="ep-path">/students/:id</span>
+            <span class="ep-desc">Get student by ID</span>
+          </div>
+          <div class="ep-body">→ { success: true, data: { id, name, branch, year } }</div>
+        </div>
+
+        <div class="endpoint-card">
+          <div class="ep-header">
+            <span class="method-tag POST" style="font-size:0.78rem;padding:4px 10px">POST</span>
+            <span class="ep-path">/students</span>
+            <span class="ep-desc">Add new student</span>
+          </div>
+          <div class="ep-body">Body: { "name": "...", "branch": "...", "year": 2 }
+→ { success: true, message: "Student added successfully", data: { ... } }</div>
+        </div>
+
+        <div class="endpoint-card">
+          <div class="ep-header">
+            <span class="method-tag PATCH" style="font-size:0.78rem;padding:4px 10px">PATCH</span>
+            <span class="ep-path">/students/:id</span>
+            <span class="ep-desc">Update student fields</span>
+          </div>
+          <div class="ep-body">Body: { "name"?: "...", "branch"?: "...", "year"?: 3 }
+→ { success: true, message: "Student updated successfully", data: { ... } }</div>
+        </div>
+
+        <div class="endpoint-card">
+          <div class="ep-header">
+            <span class="method-tag DELETE" style="font-size:0.78rem;padding:4px 10px">DELETE</span>
+            <span class="ep-path">/students/:id</span>
+            <span class="ep-desc">Delete a student</span>
+          </div>
+          <div class="ep-body">→ { success: true, message: "Student deleted successfully", data: { ... } }</div>
+        </div>
+
+        <div style="margin-top:28px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:22px">
+          <div class="section-title" style="font-size:1.1rem">🔧 Postman Setup</div>
+          <p style="color:var(--muted);font-size:0.9rem;line-height:1.7">
+            1. Open Postman → New Collection → <b style="color:var(--text)">Student Records API</b><br>
+            2. Set Base URL variable: <code style="color:var(--accent);background:#080e1e;padding:2px 6px;border-radius:4px">http://localhost:3000</code><br>
+            3. For POST/PATCH: Body → raw → JSON<br>
+            4. Import the <code style="color:var(--accent);background:#080e1e;padding:2px 6px;border-radius:4px">StudentRecords.postman_collection.json</code> included in the ZIP
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title">✏️ Update Student</div>
+    <input type="hidden" id="edit-id"/>
+    <div class="form-group">
+      <label>Name</label>
+      <input id="edit-name" type="text" style="width:100%"/>
+    </div>
+    <div class="form-group">
+      <label>Branch</label>
+      <select id="edit-branch" style="width:100%">
+        <option>Computer Science</option>
+        <option>Electronics</option>
+        <option>Mechanical</option>
+        <option>Civil</option>
+        <option>Information Tech</option>
+        <option>Chemical</option>
+        <option>Electrical</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Year</label>
+      <select id="edit-year" style="width:100%">
+        <option value="1">Year 1</option>
+        <option value="2">Year 2</option>
+        <option value="3">Year 3</option>
+        <option value="4">Year 4</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="submitEdit()">Save Changes</button>
+      <button class="btn" style="background:var(--card);color:var(--muted)" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+const API = 'http://localhost:3000';
+let allStudents = [];
+
+async function fetchStudents() {
+  try {
+    const r = await fetch(`${API}/students`);
+    const data = await r.json();
+    allStudents = data.data || [];
+    renderTable();
+    updateStats();
+  } catch(e) {
+    toast('⚠️ Cannot reach server. Is it running?', true);
+  }
+}
+
+function renderTable() {
+  const search = document.getElementById('search').value.toLowerCase();
+  const yearFilter = document.getElementById('filter-year').value;
+
+  let filtered = allStudents.filter(s => {
+    const matchSearch = s.name.toLowerCase().includes(search) || s.branch.toLowerCase().includes(search);
+    const matchYear = !yearFilter || String(s.year) === yearFilter;
+    return matchSearch && matchYear;
+  });
+
+  const tbody = document.getElementById('tbody');
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="big">🎓</div>No students found</div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(s => `
+    <tr>
+      <td><span class="id-badge">#${s.id}</span></td>
+      <td><b>${s.name}</b></td>
+      <td>${s.branch}</td>
+      <td><span class="year-badge">Year ${s.year}</span></td>
+      <td class="actions">
+        <button class="btn btn-edit" onclick="openEdit(${s.id})">Edit</button>
+        <button class="btn btn-danger" onclick="deleteStudent(${s.id})">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function updateStats() {
+  document.getElementById('st-total').textContent = allStudents.length;
+  document.getElementById('sidebar-count').textContent = allStudents.length;
+  const branches = new Set(allStudents.map(s => s.branch));
+  document.getElementById('st-branches').textContent = branches.size;
+  document.getElementById('st-year1').textContent = allStudents.filter(s => s.year === 1).length;
+  document.getElementById('st-year4').textContent = allStudents.filter(s => s.year === 4).length;
+}
+
+async function findById() {
+  const id = document.getElementById('find-id').value;
+  if (!id) return toast('Enter an ID', true);
+  try {
+    const r = await fetch(`${API}/students/${id}`);
+    const data = await r.json();
+    document.getElementById('find-result').style.display = 'block';
+    document.getElementById('find-json').textContent = JSON.stringify(data, null, 2);
+  } catch(e) { toast('Request failed', true); }
+}
+
+async function addStudent() {
+  const name   = document.getElementById('add-name').value.trim();
+  const branch = document.getElementById('add-branch').value;
+  const year   = document.getElementById('add-year').value;
+  if (!name || !branch || !year) return toast('Fill all fields', true);
+
+  try {
+    const r = await fetch(`${API}/students`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, branch, year: parseInt(year) })
+    });
+    const data = await r.json();
+    if (data.success) {
+      toast('✅ Student added!');
+      document.getElementById('add-name').value = '';
+      document.getElementById('add-branch').value = '';
+      document.getElementById('add-year').value = '';
+      fetchStudents();
+    }
+  } catch(e) { toast('Request failed', true); }
+}
+
+function openEdit(id) {
+  const s = allStudents.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('edit-id').value = s.id;
+  document.getElementById('edit-name').value = s.name;
+  document.getElementById('edit-branch').value = s.branch;
+  document.getElementById('edit-year').value = s.year;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+async function submitEdit() {
+  const id     = document.getElementById('edit-id').value;
+  const name   = document.getElementById('edit-name').value.trim();
+  const branch = document.getElementById('edit-branch').value;
+  const year   = document.getElementById('edit-year').value;
+
+  try {
+    const r = await fetch(`${API}/students/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, branch, year: parseInt(year) })
+    });
+    const data = await r.json();
+    if (data.success) {
+      toast('✅ Student updated!');
+      closeModal();
+      fetchStudents();
+    }
+  } catch(e) { toast('Request failed', true); }
+}
+
+async function deleteStudent(id) {
+  if (!confirm(`Delete student #${id}?`)) return;
+  try {
+    const r = await fetch(`${API}/students/${id}`, { method: 'DELETE' });
+    const data = await r.json();
+    if (data.success) {
+      toast('🗑️ Student deleted');
+      fetchStudents();
+    }
+  } catch(e) { toast('Request failed', true); }
+}
+
+function showTab(name) {
+  document.querySelectorAll('.tab-panels > div').forEach(d => d.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+let toastTimer;
+function toast(msg, isErr = false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = isErr ? 'error' : '';
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+// Init
+fetchStudents();
+</script>
+</body>
+</html>
