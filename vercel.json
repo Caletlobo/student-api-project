@@ -8,8 +8,12 @@
   ],
   "routes": [
     {
-      "src": "/(.*)",
+      "src": "/students(.*)",
       "dest": "server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "index.html"
     }
   ]
 }
